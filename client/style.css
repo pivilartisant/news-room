@@ -1,0 +1,365 @@
+body {
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 0;
+    background: #f8f8f8;
+    color: #1a1a1a;
+    line-height: 1.4;
+    min-height: 100vh;
+}
+
+.container {
+    background: #fefefe;
+    padding: 30px;
+    border: 2px solid #1a1a1a;
+    margin: 20px;
+    min-height: calc(100vh - 80px);
+}
+
+h1 {
+    font-family: 'Courier New', monospace;
+    font-size: 2.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin: 0 0 5px 0;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+}
+
+.subtitle {
+    text-align: center;
+    margin-bottom: 30px;
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-bottom: 1px solid #ccc;
+    padding-bottom: 15px;
+}
+
+.dashboard-content {
+    display: flex;
+    gap: 20px;
+    margin-top: 25px;
+}
+
+.events-wrapper {
+    flex: 1;
+    border-right: 2px solid #1a1a1a;
+    padding-right: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 40px;
+}
+
+.events-container {
+    max-height: 400px;
+    overflow-y: auto;
+    border-bottom:1px solid #1a1a1a;
+}
+
+.hackathons-container {
+    max-height: 500px;
+    overflow-y: auto;
+    border-bottom:1px solid #1a1a1a;
+}
+
+.events-container::-webkit-scrollbar {
+    width: 8px;
+}
+
+.events-container::-webkit-scrollbar-track {
+    background: #f8f8f8;
+    border: 1px solid #ccc;
+}
+
+.events-container::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+    border: 1px solid #666;
+}
+
+.events-container::-webkit-scrollbar-thumb:hover {
+    background: #333;
+}
+
+.events-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+    position: sticky;
+    top: 0;
+    background: #fefefe;
+    z-index: 10;
+}
+
+.events-header h2 {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.refresh-btn {
+    background: #1a1a1a;
+    color: #fefefe;
+    border: 1px solid #1a1a1a;
+    padding: 5px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.refresh-btn:hover {
+    background: #fefefe;
+    color: #1a1a1a;
+}
+
+.events-source {
+    margin-bottom: 30px;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.events-source a {
+    color: #1a1a1a;
+    text-decoration: underline;
+}
+
+.events-source a:hover {
+    color: #666;
+}
+
+.slack-container {
+    flex: 2;
+    border-right: 2px solid #1a1a1a;
+}
+
+.slack-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #ccc;
+}
+
+.slack-header h2 {
+    font-family: 'Courier New', monospace;
+    font-size: 1.2rem;
+    font-weight: bold;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.slack-source {
+    margin-bottom: 15px;
+    font-size: 0.8rem;
+    color: #666;
+    text-align: center;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.slack-message {
+    border-bottom: 1px solid #ddd;
+    margin: 0 0 15px 0;
+    padding: 0 0 10px 0;
+    background: transparent;
+}
+
+.slack-message:last-child {
+    border-bottom: none;
+}
+
+.slack-message h4 {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    font-weight: bold;
+    margin: 0 0 5px 0;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.slack-message p {
+    margin: 2px 0;
+    font-size: 0.8rem;
+}
+
+.slack-message .original-text {
+    background: #f8f8f8;
+    padding: 8px;
+    border-left: 3px solid #ccc;
+    font-style: italic;
+    margin: 5px 0;
+}
+
+.slack-message .original-text a {
+    color: #1a1a1a;
+    text-decoration: underline;
+    font-weight: bold;
+}
+
+.slack-message .original-text a:hover {
+    color: #666;
+    background: #eee;
+}
+
+.channel-filters {
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.filter-label {
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+#filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+}
+
+.channel-filter-btn {
+    background: #f8f8f8;
+    color: #1a1a1a;
+    border: 1px solid #ccc;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.channel-filter-btn:hover {
+    background: #eee;
+}
+
+.channel-filter-btn.active {
+    background: #1a1a1a;
+    color: #fefefe;
+}
+
+.event {
+    border-bottom: 1px solid #ddd;
+    margin: 0 0 20px 0;
+    padding: 0 0 15px 0;
+    background: transparent;
+}
+
+.event:last-child {
+    border-bottom: none;
+}
+
+.event h3 {
+    font-family: 'Courier New', monospace;
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0 0 8px 0;
+    color: #1a1a1a;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.event p {
+    margin: 3px 0;
+    font-size: 0.9rem;
+}
+
+.event strong {
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    letter-spacing: 0.5px;
+}
+
+.dashboard-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 20px 0;
+    padding: 10px 0;
+    border-top: 1px solid #ccc;
+    border-bottom: 1px solid #ccc;
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.admin-controls {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.admin-btn {
+    background: #1a1a1a;
+    color: #fefefe;
+    border: 1px solid #1a1a1a;
+    padding: 4px 8px;
+    font-family: 'Courier New', monospace;
+    font-size: 0.7rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    transition: background 0.2s;
+}
+
+.admin-btn:hover {
+    background: #333;
+}
+
+.status {
+    color: #1a1a1a;
+    font-weight: bold;
+}
+
+.timestamp {
+    color: #666;
+}
+
+.loading {
+    text-align: center;
+    color: #666;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+@media (max-width: 768px) {
+    h1 {
+        font-size: 2rem;
+        letter-spacing: 2px;
+    }
+    .container {
+        margin: 10px;
+        padding: 20px;
+        min-height: calc(100vh - 60px);
+    }
+    .dashboard-content {
+        flex-direction: column;
+        gap: 20px;
+    }
+    .events-wrapper {
+        border-right: none;
+        padding-right: 0;
+    }
+}

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hack Club News Room</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>🏴‍☠️ Hack Club News Room</h1>
+        <div class="subtitle">Latest News from Hack Club</div>
+        <div class="dashboard-header">
+            <span class="status">Live Dashboard</span>
+            <div class="admin-controls">
+                <button id="admin-toggle" onclick="toggleAdminMode()" class="admin-btn">Admin Mode</button>
+                <span class="timestamp" id="timestamp"></span>
+            </div>
+        </div>
+        <div class="dashboard-content">
+            <div id="slack-data" class="slack-container">
+                <div class="slack-header">
+                    <h2>Slack Activity</h2>
+                    <button onclick="loadSlackData()" class="refresh-btn">↻ Refresh</button>
+                </div>
+                <div class="slack-source">
+                    <span>Source: Slack Channel Monitor</span>
+                </div>
+                <div class="channel-filters" id="channel-filters">
+                    <div class="filter-label">Filter by channel:</div>
+                    <div id="filter-buttons"></div>
+                </div>
+                <div id="slack-list"></div>
+            </div>
+
+            <div class="events-wrapper">
+                <div id="events" class="events-container">
+                    <div class="events-header">
+                        <h2>Upcoming Events</h2>
+                        <button onclick="loadEvents()" class="refresh-btn">↻ Refresh</button>
+                    </div>
+                    <div class="events-source">
+                        <span>Source: <a href="https://events.hackclub.com" target="_blank">events.hackclub.com</a></span>
+                    </div>
+                    <div id="events-list"></div>
+                </div>
+
+                <div id="hackathons" class="hackathons-container">
+                    <div class="events-header">
+                        <h2>Upcoming Hackathons</h2>
+                        <button onclick="loadHackathons()" class="refresh-btn">↻ Refresh</button>
+                    </div>
+                    <div class="events-source">
+                        <span>Source: <a href="https://hackathons.hackclub.com" target="_blank">hackathons.hackclub.com</a></span>
+                    </div>
+                    <div id="hackathons-list"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

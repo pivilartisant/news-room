@@ -1,0 +1,19 @@
+{
+  "name": "telecom",
+  "private": true,
+  "devDependencies": {
+    "@types/bun": "latest"
+  },
+  "scripts": {
+    "build-server": "bun build ./server/app.js --outdir=dist --target=node",
+    "start-server": "bun run server/app.js"
+  },
+  "peerDependencies": {
+    "typescript": "^5"
+  },
+  "dependencies": {
+    "@slack/bolt": "^4.4.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0"
+  }
+}
