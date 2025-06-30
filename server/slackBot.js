@@ -253,6 +253,60 @@ async function loadShipHistory() {
   }
 }
 
+// Function to get and integrate #announcements history
+async function loadAnnouncementsHistory() {
+  try {
+    console.log('🔍 Loading #announcements channel history...');
+    
+    const announcementsChannelId = 'C0266FRGT'; // Hardcoded #announcements channel ID
+    
+    const messages = await getChannelHistory(announcementsChannelId, 3); // Get last 3 messages
+    
+    if (messages.length === 0) {
+      console.log('📭 No messages found in #announcements');
+      return;
+    }
+    
+    console.log(`📋 Loaded ${messages.length} messages from #announcements`);
+    
+    // Convert announcements messages to same format as real-time messages
+    const announcementsMessages = messages.map(message => ({
+      id: `announcements-${message.ts}`,
+      timestamp: new Date(message.ts * 1000).toISOString(),
+      user: message.user,
+      channel: announcementsChannelId,
+      text: message.text
+    }));
+    
+    // Remove old announcements messages from extractedData
+    extractedData = extractedData.filter(msg => !msg.id.startsWith('announcements-'));
+    
+    // Add new announcements messages to the beginning
+    extractedData = [...announcementsMessages.reverse(), ...extractedData];
+  
+    // Keep only last 50 total entries
+    if (extractedData.length > 50) {
+      extractedData = extractedData.slice(0, 50);
+    }
+    
+    // Add announcements channel to botChannels if not already there
+    const announcementsExists = botChannels.some(ch => ch.id === announcementsChannelId);
+    if (!announcementsExists) {
+      botChannels.unshift({
+        id: announcementsChannelId,
+        name: 'announcements',
+        is_private: false,
+        num_members: 0,
+        purpose: 'Important announcements and updates',
+        updated: new Date().toISOString()
+      });
+    }
+    
+  } catch (error) {
+    console.error('❌ Error loading announcements history:', error);
+  }
+}
+
 // Function to load history from all private channels
 async function loadPrivateChannelsHistory() {
   try {
@@ -325,6 +379,7 @@ async function startSlackBot() {
         await loadHappeningsHistory();
         await loadHackathonsHistory();
         await loadShipHistory();
+        await loadAnnouncementsHistory();
         await loadPrivateChannelsHistory();
       }, 2000); // Wait 2 seconds for bot to fully initialize
       
@@ -333,6 +388,7 @@ async function startSlackBot() {
         await loadHappeningsHistory();
         await loadHackathonsHistory();
         await loadShipHistory();
+        await loadAnnouncementsHistory();
         await loadPrivateChannelsHistory();
       }, 10 * 60 * 1000);
       

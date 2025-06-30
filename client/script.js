@@ -196,6 +196,7 @@ async function loadChannels() {
         channelNames['C05B6DBN802'] = 'happenings';
         channelNames['C0NP503L7'] = 'hackathons';
         channelNames['C0M8PUPU6'] = 'ship';
+        channelNames['C0266FRGT'] = 'announcements';
         
         channels.forEach(channel => {
             channelNames[channel.id] = channel.name;
@@ -225,11 +226,17 @@ async function loadChannels() {
                                title="Latest projects and creations shipped">
                            #ship
                        </button>`;
+
+        buttonsHTML += `<button class="channel-filter-btn ${selectedChannel === 'C0266FRGT' ? 'active' : ''}" 
+                               onclick="filterByChannel('C0266FRGT')"
+                               title="Important announcements and updates">
+                           #announcements
+                       </button>`;
         
         // Add other channel buttons
         if (channels.length > 0) {
         buttonsHTML += channels
-        .filter(channel => channel.id !== 'C05B6DBN802' && channel.id !== 'C0NP503L7' && channel.id !== 'C0M8PUPU6') // Don't duplicate hardcoded channels
+        .filter(channel => channel.id !== 'C05B6DBN802' && channel.id !== 'C0NP503L7' && channel.id !== 'C0M8PUPU6' && channel.id !== 'C0266FRGT') // Don't duplicate hardcoded channels
         .filter(channel => isAdminMode || !channel.is_private) // Hide private channels in public mode
         .map(channel => `
         <button class="channel-filter-btn ${selectedChannel === channel.id ? 'active' : ''}" 
