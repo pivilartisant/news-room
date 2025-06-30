@@ -5,8 +5,8 @@
     "@types/bun": "latest"
   },
   "scripts": {
-    "build-server": "bun build ./server/app.js --outdir=dist --target=node",
-    "start-server": "bun run server/app.js"
+    "build-server": "bun build app.js --outdir=dist --target=node",
+    "start-server": "bun run app.js"
   },
   "peerDependencies": {
     "typescript": "^5"

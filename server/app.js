@@ -8,7 +8,11 @@ const PORT = process.env.PORT || 3000;
 
 app.use(cors());
 app.use(express.json());
-app.use(express.static(path.join(__dirname, '..', 'client')));
+
+const static_dir = path.join(__dirname, '.');
+console.log('Static files directory:', static_dir);
+
+app.use(express.static(static_dir));
 
 app.get('/api/events-api', async (req, res) => {
   try {
@@ -84,7 +88,7 @@ app.get('/api/slack-channels', async (req, res) => {
 });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(__dirname, '..', 'client', 'index.html'));
+  res.sendFile(static_dir);
 });
 
 app.listen(PORT, async () => {

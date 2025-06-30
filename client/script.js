@@ -325,8 +325,8 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 // Refresh data every 5 minutes
 setInterval(async () => {
-    loadEvents();
-    loadHackathons();
     await loadChannels(); // Load channels first
-    loadSlackData(); // Then load messages
-}, 5 * 60 * 1000);
+    await loadSlackData(); // Then load messages
+    await loadEvents();
+    await loadHackathons();
+}, 5 * 60 * 5000);
