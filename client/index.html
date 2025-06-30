@@ -3,60 +3,88 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hack Club News Room</title>
+    <title>Hack Club News Dashboard</title>
+    <meta name="description" content="Live dashboard showing Hack Club events, hackathons, and community Slack activity">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <div class="container">
-        <h1>🏴‍☠️ Hack Club News Room</h1>
-        <div class="subtitle">Latest News from Hack Club</div>
-        <div class="dashboard-header">
-            <span class="status">Live Dashboard</span>
+        <header>
+            <h1>Hack Club News</h1>
+            <p class="subtitle">Live Dashboard of Events & Community Activity</p>
+        </header>
+
+        <section class="dashboard-header" role="banner">
+            <div class="status">
+                <span id="timestamp" aria-live="polite">Loading...</span>
+            </div>
             <div class="admin-controls">
-                <button id="admin-toggle" onclick="toggleAdminMode()" class="admin-btn">Admin Mode</button>
-                <span class="timestamp" id="timestamp"></span>
+                <button id="admin-toggle" class="admin-btn" onclick="toggleAdminMode()" 
+                        aria-label="Toggle admin mode for private channel access">
+                    Admin Mode
+                </button>
             </div>
-        </div>
-        <div class="dashboard-content">
-            <div id="slack-data" class="slack-container">
-                <div class="slack-header">
-                    <h2>Slack Activity</h2>
-                    <button onclick="loadSlackData()" class="refresh-btn">↻ Refresh</button>
-                </div>
-                <div class="slack-source">
-                    <span>Source: Slack Channel Monitor</span>
-                </div>
-                <div class="channel-filters" id="channel-filters">
-                    <div class="filter-label">Filter by channel:</div>
-                    <div id="filter-buttons"></div>
-                </div>
-                <div id="slack-list"></div>
-            </div>
+        </section>
 
-            <div class="events-wrapper">
-                <div id="events" class="events-container">
-                    <div class="events-header">
-                        <h2>Upcoming Events</h2>
-                        <button onclick="loadEvents()" class="refresh-btn">↻ Refresh</button>
-                    </div>
-                    <div class="events-source">
-                        <span>Source: <a href="https://events.hackclub.com" target="_blank">events.hackclub.com</a></span>
-                    </div>
-                    <div id="events-list"></div>
+        <main class="dashboard-content">
+            <main class="slack-container" aria-labelledby="slack-heading">
+                <header class="slack-header">
+                    <h2 id="slack-heading">Slack Activity</h2>
+                    <button onclick="loadSlackData()" class="refresh-btn" 
+                            aria-label="Refresh Slack messages">
+                        ↻ Refresh
+                    </button>
+                </header>
+                <div class="slack-source" role="note">
+                    <span>Source: Live Slack Bot Integration</span>
                 </div>
+                <nav class="channel-filters" aria-labelledby="filter-label">
+                    <div id="filter-label" class="filter-label">Filter by Channel:</div>
+                    <div id="filter-buttons" role="group" aria-labelledby="filter-label">
+                        <!-- Channel filter buttons will be populated by JavaScript -->
+                    </div>
+                </nav>
+                <div class="slack-list-container">
+                    <div id="slack-list" role="region" aria-live="polite" aria-label="Slack messages"></div>
+                </div>
+            </main>
+            
+            <aside class="events-wrapper" aria-label="Events and hackathons">
+                <section id="events" class="events-container" aria-labelledby="events-heading">
+                    <header class="events-header">
+                        <h3 id="events-heading">Events</h3>
+                        <button onclick="loadEvents()" class="refresh-btn" 
+                                aria-label="Refresh events list">
+                            ↻ Refresh
+                        </button>
+                    </header>
+                    <div class="events-source" role="note">
+                        <span>Source: <a href="https://events.hackclub.com" target="_blank" 
+                                        rel="noopener noreferrer">events.hackclub.com</a></span>
+                    </div>
+                    <div class="events-list-container">
+                        <div id="events-list" role="region" aria-live="polite" aria-label="Events list"></div>
+                    </div>
+                </section>
 
-                <div id="hackathons" class="hackathons-container">
-                    <div class="events-header">
-                        <h2>Upcoming Hackathons</h2>
-                        <button onclick="loadHackathons()" class="refresh-btn">↻ Refresh</button>
+                <section id="hackathons" class="events-container" aria-labelledby="hackathons-heading">
+                    <header class="events-header">
+                        <h3 id="hackathons-heading">Hackathons</h3>
+                        <button onclick="loadHackathons()" class="refresh-btn" 
+                                aria-label="Refresh hackathons list">
+                            ↻ Refresh
+                        </button>
+                    </header>
+                    <div class="events-source" role="note">
+                        <span>Source: <a href="https://hackathons.hackclub.com" target="_blank" 
+                                        rel="noopener noreferrer">hackathons.hackclub.com</a></span>
                     </div>
-                    <div class="events-source">
-                        <span>Source: <a href="https://hackathons.hackclub.com" target="_blank">hackathons.hackclub.com</a></span>
+                    <div class="events-list-container">
+                        <div id="hackathons-list" role="region" aria-live="polite" aria-label="Hackathons list"></div>
                     </div>
-                    <div id="hackathons-list"></div>
-                </div>
-            </div>
-        </div>
+                </section>
+            </aside>
+        </main>
     </div>
 
     <script src="script.js"></script>
