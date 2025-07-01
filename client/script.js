@@ -160,6 +160,9 @@ function displayFilteredMessages() {
         filteredData = allSlackData.filter(message => message.channel === selectedChannel);
     }
     
+    // Sort messages by timestamp (most recent first)
+    filteredData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+    
     if (filteredData.length === 0) {
         slackListDiv.innerHTML = selectedChannel === 'all' ? 
             '<p>No Slack activity found.</p>' : 
