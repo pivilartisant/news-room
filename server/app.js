@@ -4,7 +4,7 @@ const path = require('path');
 const slackBot = require('./slackBot');
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 3046;
 
 app.use(cors());
 app.use(express.json());

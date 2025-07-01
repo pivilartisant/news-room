@@ -11,7 +11,7 @@ COPY ./server /app/.
 COPY ./client /app/.
 
 # Expose the port on which the API will listen
-EXPOSE 3000
+EXPOSE 3046
 
 # Run the server when the container launches
 CMD ["bun", "start-server"]
