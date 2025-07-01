@@ -99,6 +99,7 @@ async function loadHappeningsHistory() {
     
     const messages = await getChannelHistory(happeningsChannelId, 3); // Get more messages
     
+
     if (messages.length === 0) {
       console.log('📭 No messages found in #happenings');
       return;

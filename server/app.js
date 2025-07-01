@@ -24,7 +24,6 @@ app.get('/api/events-api', async (req, res) => {
     }
     
     const responseText = await response.text();
-    console.log('Raw response (first 500 chars):', responseText.substring(0, 500));
     
     let data;
     try {

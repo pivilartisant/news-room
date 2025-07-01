@@ -570,6 +570,57 @@ a:focus {
     }
 }
 
+/* Footer */
+.footer {
+    margin-top: 40px;
+    border-top: 2px solid #1a1a1a;
+    padding: 20px 0;
+    background: #f9f9f9;
+}
+
+.footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+}
+
+.footer-content p {
+    margin: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.github-link {
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    color: #1a1a1a;
+    text-decoration: none;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border: 2px solid #1a1a1a;
+    padding: 8px 16px;
+    background: #fff;
+    transition: all 0.2s ease;
+    box-shadow: 2px 2px 0px #1a1a1a;
+}
+
+.github-link:hover {
+    background: #1a1a1a;
+    color: #fff;
+    transform: translate(-1px, -1px);
+    box-shadow: 3px 3px 0px #666;
+}
+
+.github-link:active {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #666;
+}
+
 /* Reduced Motion Support */
 @media (prefers-reduced-motion: reduce) {
     *,
@@ -578,5 +629,14 @@ a:focus {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+    }
+}
+
+/* Mobile footer adjustments */
+@media (max-width: 768px) {
+    .footer-content {
+        flex-direction: column;
+        text-align: center;
+        gap: 15px;
     }
 }
