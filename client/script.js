@@ -12,7 +12,6 @@ function updateTimestamp() {
 
 async function loadEvents() {
     const eventsListDiv = document.getElementById('events-list');
-    eventsListDiv.innerHTML = '<div class="loading">Loading events...</div>';
     
     try {
         const response = await fetch('/api/events-api');
@@ -36,14 +35,13 @@ async function loadEvents() {
         `).join('');
     } catch (error) {
         console.error('Error loading events:', error);
-        eventsListDiv.innerHTML = '<p style="color: red;">Error loading events. Please try again.</p>';
+        eventsListDiv.innerHTML = '<div class="error">❌ Error loading events. Please try again.</div>';
         updateTimestamp();
     }
 }
 
 async function loadHackathons() {
     const hackathonsListDiv = document.getElementById('hackathons-list');
-    hackathonsListDiv.innerHTML = '<div class="loading">Loading hackathons...</div>';
     
     try {
         const response = await fetch('/api/hackathons-api');
@@ -92,7 +90,7 @@ async function loadHackathons() {
         }).join('');
     } catch (error) {
         console.error('Error loading hackathons:', error);
-        hackathonsListDiv.innerHTML = '<p style="color: red;">Error loading hackathons. Please try again.</p>';
+        hackathonsListDiv.innerHTML = '<div class="error">❌ Error loading hackathons. Please try again.</div>';
         updateTimestamp();
     }
 }
@@ -118,9 +116,19 @@ function parseSlackLinks(text) {
 
 async function loadSlackData() {
     const slackListDiv = document.getElementById('slack-list');
-    slackListDiv.innerHTML = '<div class="loading">Loading Slack data...</div>';
+    const refreshBtn = document.querySelector('.slack-container .refresh-btn');
+    
+    // Show loading state
+    slackListDiv.innerHTML = `
+        <div class="loading">
+            <div class="loading-spinner"></div>
+            <div class="loading-text loading-dots">Loading Slack messages</div>
+        </div>
+    `;
+    refreshBtn.classList.add('loading');
     
     try {
+        console.info('🔗 Loading Slack data');
         let url = '/api/slack-data';
         let options = {};
         
@@ -148,7 +156,9 @@ async function loadSlackData() {
         displayFilteredMessages();
     } catch (error) {
         console.error('Error loading Slack data:', error);
-        slackListDiv.innerHTML = '<p style="color: red;">Error loading Slack data. Please try again.</p>';
+        slackListDiv.innerHTML = '<div class="error">❌ Error loading Slack data. Please try again.</div>';
+    } finally {
+        refreshBtn.classList.remove('loading');
     }
 }
 
@@ -314,8 +324,51 @@ function toggleAdminMode() {
     }
 }
 
+// Show initial skeleton loading
+function showSkeletonLoading() {
+    // Events skeleton
+    document.getElementById('events-list').innerHTML = `
+        <div class="skeleton-event">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line medium"></div>
+        </div>
+        <div class="skeleton-event">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line long"></div>
+        </div>
+    `;
+    
+    // Hackathons skeleton
+    document.getElementById('hackathons-list').innerHTML = `
+        <div class="skeleton-event">
+            <div class="skeleton skeleton-line title"></div>
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line medium"></div>
+        </div>
+    `;
+    
+    // Slack skeleton
+    document.getElementById('slack-list').innerHTML = `
+        <div class="skeleton-message">
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line medium"></div>
+            <div class="skeleton skeleton-line long"></div>
+        </div>
+        <div class="skeleton-message">
+            <div class="skeleton skeleton-line short"></div>
+            <div class="skeleton skeleton-line long"></div>
+            <div class="skeleton skeleton-line medium"></div>
+        </div>
+    `;
+}
+
 // Load events when page loads
 document.addEventListener('DOMContentLoaded', async () => {
+    // Show skeleton loading immediately
+    showSkeletonLoading();
+    
     console.log('📅 Loading events from events.hackclub.com');
     await loadEvents();
     console.log('🎯 Loading hackathons from hackathons.hackclub.com');

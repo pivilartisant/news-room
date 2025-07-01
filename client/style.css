@@ -446,16 +446,103 @@ h1 {
     padding: 2px 4px;
 }
 
-/* Loading State */
+/* Loading States */
 .loading {
-    text-align: center;
-    color: #666;
-    font-size: 1.1rem;
-    text-transform: uppercase;
-    letter-spacing: 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     padding: 40px;
-    font-style: italic;
+    text-align: center;
 }
+
+.loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #1a1a1a;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-bottom: 20px;
+}
+
+.loading-text {
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+}
+
+.loading-dots::after {
+    content: '';
+    animation: dots 1.5s steps(5, end) infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+@keyframes dots {
+    0%, 20% { content: ''; }
+    40% { content: '.'; }
+    60% { content: '..'; }
+    80%, 100% { content: '...'; }
+}
+
+/* Skeleton Loading */
+.skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+.skeleton-event {
+    border: 2px solid #eee;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+.skeleton-line {
+    height: 16px;
+    margin-bottom: 12px;
+    border-radius: 4px;
+}
+
+.skeleton-line.title {
+    height: 20px;
+    width: 70%;
+    margin-bottom: 16px;
+}
+
+.skeleton-line.short {
+    width: 40%;
+}
+
+.skeleton-line.medium {
+    width: 60%;
+}
+
+.skeleton-line.long {
+    width: 80%;
+}
+
+.skeleton-message {
+    border: 2px solid #eee;
+    padding: 20px;
+    margin-bottom: 20px;
+    border-radius: 4px;
+}
+
+@keyframes loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+
 
 /* Focus and Accessibility */
 button:focus,
