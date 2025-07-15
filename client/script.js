@@ -332,7 +332,7 @@ function renderMessage(message, messageType, displayChannel, parsedText) {
             </div>
             <div class="message-actions">
                 ${isLongMessage ? `<button class="expand-btn" onclick="toggleExpand('${messageId}')">Read More</button>` : ''}
-                <a href="https://hackclub.slack.com/archives/${message.channel}/p${message.id.split('-')[1]?.replace('.', '')}" target="_blank" class="view-slack">View in Slack</a>
+                <a href="https://hackclub.slack.com/archives/${message.channel}/p${String(message.id).includes('-') ? String(message.id).split('-')[1]?.replace('.', '') : String(message.id)}" target="_blank" class="view-slack">View in Slack</a>
             </div>
         </div>
     `;
