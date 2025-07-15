@@ -64,7 +64,11 @@ app.get('/api/slack-data', (req, res) => {
   res.json(extractedData);
 });
 
-
+// API endpoint to get Slack loading status
+app.get('/api/slack-loading-status', (req, res) => {
+  const loadingStatus = slackBot.getLoadingStatus();
+  res.json(loadingStatus);
+});
 
 // API endpoint to get bot channels
 app.get('/api/slack-channels', async (req, res) => {
@@ -78,6 +82,7 @@ app.get('/', (req, res) => {
 
 app.listen(PORT, async () => {
   console.log(`Server running on port ${PORT}`);
+  console.log(`🌐 Access the dashboard at: http://localhost:${PORT}`);
   
   // Start Slack bot
   await slackBot.startSlackBot();

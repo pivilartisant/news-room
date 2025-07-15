@@ -8,6 +8,13 @@ function sleep(ms) {
 // In-memory storage for extracted data
 let extractedData = [];
 let botChannels = [];
+let loadingStatus = {
+  isLoading: false,
+  currentChannel: null,
+  completed: 0,
+  total: 0,
+  message: 'Ready'
+};
 
 // Slack bot setup (only if environment variables are provided)
 let slackApp = null;
@@ -102,222 +109,132 @@ async function getBotChannels() {
   }
 }
 
-// Function to get and integrate #happenings history
-async function loadHappeningsHistory() {
+// Channel configurations
+const MONITORED_CHANNELS = {
+  happenings: {
+    id: 'C05B6DBN802',
+    name: 'happenings',
+    purpose: 'Latest happenings and announcements',
+    messageLimit: 2
+  },
+  hackathons: {
+    id: 'C0NP503L7',
+    name: 'hackathons',
+    purpose: 'Hackathon announcements and updates',
+    messageLimit: 2
+  },
+  ship: {
+    id: 'C0M8PUPU6',
+    name: 'ship',
+    purpose: 'Latest projects and creations shipped',
+    messageLimit: 5
+  },
+  announcements: {
+    id: 'C0266FRGT',
+    name: 'announcements',
+    purpose: 'Important announcements and updates',
+    messageLimit: 4
+  }
+};
+
+// Generic function to load channel history
+async function loadChannelHistory(channelKey) {
+  const channel = MONITORED_CHANNELS[channelKey];
+  if (!channel) {
+    console.error(`❌ Unknown channel: ${channelKey}`);
+    return;
+  }
+
   try {
-    console.log('🔍 Loading #happenings channel history...');
+    // Update loading status
+    loadingStatus.currentChannel = channel.name;
+    loadingStatus.message = `Loading #${channel.name}...`;
     
-    const happeningsChannelId = 'C05B6DBN802'; // Hardcoded #happenings channel ID
+    console.log(`🔍 Loading #${channel.name} channel history...`);
     
-    const messages = await getChannelHistory(happeningsChannelId, 1); // Only 1 message
-
-
+    const messages = await getChannelHistory(channel.id, channel.messageLimit);
+    
     if (messages.length === 0) {
-      console.log('📭 No messages found in #happenings');
+      console.log(`📭 No messages found in #${channel.name}`);
       return;
     }
     
-    console.log(`📋 Loaded ${messages.length} messages from #happenings`);
+    console.log(`📋 Loaded ${messages.length} message${messages.length > 1 ? 's' : ''} from #${channel.name}`);
     
-    // Convert happenings messages to same format as real-time messages
-    const happeningsMessages = messages.map(message => ({
-      id: `happenings-${message.ts}`,
+    // Convert messages to standard format
+    const formattedMessages = messages.map(message => ({
+      id: `${channel.name}-${message.ts}`,
       timestamp: new Date(message.ts * 1000).toISOString(),
       user: message.user,
-      channel: happeningsChannelId,
+      channel: channel.id,
       text: message.text
     }));
     
-    // Remove old happenings messages from extractedData
-    extractedData = extractedData.filter(msg => !msg.id.startsWith('happenings-'));
+    // Remove old messages from this channel
+    extractedData = extractedData.filter(msg => !String(msg.id).startsWith(`${channel.name}-`));
     
-    // Add new happenings messages to the beginning
-    extractedData = [...happeningsMessages.reverse(), ...extractedData];
+    // Add new messages to the beginning
+    extractedData = [...formattedMessages.reverse(), ...extractedData];
     
     // Keep only last 50 total entries
     if (extractedData.length > 50) {
       extractedData = extractedData.slice(0, 50);
     }
     
-    // Add happenings channel to botChannels if not already there
-    const happeningsExists = botChannels.some(ch => ch.id === happeningsChannelId);
-    if (!happeningsExists) {
+    // Add channel to botChannels if not already there
+    const channelExists = botChannels.some(ch => ch.id === channel.id);
+    if (!channelExists) {
       botChannels.unshift({
-        id: happeningsChannelId,
-        name: 'happenings',
+        id: channel.id,
+        name: channel.name,
         is_private: false,
         num_members: 0,
-        purpose: 'Latest happenings and announcements',
+        purpose: channel.purpose,
         updated: new Date().toISOString()
       });
     }
     
   } catch (error) {
-    console.error('❌ Error loading happenings history:', error);
+    console.error(`❌ Error loading ${channel.name} history:`, error);
   }
 }
 
-// Function to get and integrate #hackathons history
-async function loadHackathonsHistory() {
-  try {
-    console.log('🔍 Loading #hackathons channel history...');
-    
-    const hackathonsChannelId = 'C0NP503L7'; // Hardcoded #hackathons channel ID
-    
-    const messages = await getChannelHistory(hackathonsChannelId, 2); // Get only last 2 messages
-    
-    if (messages.length === 0) {
-      console.log('📭 No messages found in #hackathons');
-      return;
-    }
-    
-    console.log(`📋 Loaded ${messages.length} messages from #hackathons`);
-    
-    // Convert hackathons messages to same format as real-time messages
-    const hackathonsMessages = messages.map(message => ({
-      id: `hackathons-${message.ts}`,
-      timestamp: new Date(message.ts * 1000).toISOString(),
-      user: message.user,
-      channel: hackathonsChannelId,
-      text: message.text
-    }));
-    
-    // Remove old hackathons messages from extractedData
-    extractedData = extractedData.filter(msg => !msg.id.startsWith('hackathons-'));
-    
-    // Add new hackathons messages to the beginning
-    extractedData = [...hackathonsMessages.reverse(), ...extractedData];
-    
-    // Keep only last 50 total entries
-    if (extractedData.length > 50) {
-      extractedData = extractedData.slice(0, 50);
-    }
-    
-    // Add hackathons channel to botChannels if not already there
-    const hackathonsExists = botChannels.some(ch => ch.id === hackathonsChannelId);
-    if (!hackathonsExists) {
-      botChannels.unshift({
-        id: hackathonsChannelId,
-        name: 'hackathons',
-        is_private: false,
-        num_members: 0,
-        purpose: 'Hackathon announcements and updates',
-        updated: new Date().toISOString()
-      });
-    }
-    
-  } catch (error) {
-    console.error('❌ Error loading hackathons history:', error);
-  }
-}
+// Convenience functions for backward compatibility
+const loadHappeningsHistory = () => loadChannelHistory('happenings');
+const loadHackathonsHistory = () => loadChannelHistory('hackathons');
+const loadShipHistory = () => loadChannelHistory('ship');
+const loadAnnouncementsHistory = () => loadChannelHistory('announcements');
 
-// Function to get and integrate #ship history
-async function loadShipHistory() {
-  try {
-    console.log('🔍 Loading #ship channel history...');
-    
-    const shipChannelId = 'C0M8PUPU6'; // Hardcoded #ship channel ID
-    
-    const messages = await getChannelHistory(shipChannelId, 1); // Get only last 1 message
-    
-    if (messages.length === 0) {
-      console.log('📭 No messages found in #ship');
-      return;
-    }
-    
-
-    console.log(`📋 Loaded ${messages.length} message from #ship\n`);
-    
-    // Convert ship messages to same format as real-time messages
-    const shipMessages = messages.map(message => ({
-      id: `ship-${message.ts}`,
-      timestamp: new Date(message.ts * 1000).toISOString(),
-      user: message.user,
-      channel: shipChannelId,
-      text: message.text
-    }));
-    
-    // Remove old ship messages from extractedData
-    extractedData = extractedData.filter(msg => !msg.id.startsWith('ship-'));
-    
-    // Add new ship messages to the beginning
-    extractedData = [...shipMessages.reverse(), ...extractedData];
+// Function to load multiple channels with rate limiting
+async function loadMultipleChannels(channelKeys, delayMs = 15000) {
+  // Initialize loading status
+  loadingStatus.isLoading = true;
+  loadingStatus.completed = 0;
+  loadingStatus.total = channelKeys.length;
+  loadingStatus.message = 'Starting channel loading...';
   
-    // Keep only last 50 total entries
-    if (extractedData.length > 50) {
-      extractedData = extractedData.slice(0, 50);
-    }
-    
-    // Add ship channel to botChannels if not already there
-    const shipExists = botChannels.some(ch => ch.id === shipChannelId);
-    if (!shipExists) {
-      botChannels.unshift({
-        id: shipChannelId,
-        name: 'ship',
-        is_private: false,
-        num_members: 0,
-        purpose: 'Latest projects and creations shipped',
-        updated: new Date().toISOString()
-      });
-    }
-    
-  } catch (error) {
-    console.error('❌ Error loading ship history:', error);
-  }
-}
-
-// Function to get and integrate #announcements history
-async function loadAnnouncementsHistory() {
-  try {
-    console.log('🔍 Loading #announcements channel history...');
-    
-    const announcementsChannelId = 'C0266FRGT'; // Hardcoded #announcements channel ID
-    
-    const messages = await getChannelHistory(announcementsChannelId, 1); // Get last 2 messages
-    
-    if (messages.length === 0) {
-      console.log('📭 No messages found in #announcements');
-      return;
-    }
-    
-    console.log(`📋 Loaded ${messages.length} messages from #announcements`);
-    
-    // Convert announcements messages to same format as real-time messages
-    const announcementsMessages = messages.map(message => ({
-      id: `announcements-${message.ts}`,
-      timestamp: new Date(message.ts * 1000).toISOString(),
-      user: message.user,
-      channel: announcementsChannelId,
-      text: message.text
-    }));
-    
-    // Remove old announcements messages from extractedData
-    extractedData = extractedData.filter(msg => !msg.id.startsWith('announcements-'));
-    
-    // Add new announcements messages to the beginning
-    extractedData = [...announcementsMessages.reverse(), ...extractedData];
+  console.log(`🚀 Loading ${channelKeys.length} channels...`);
   
-    // Keep only last 50 total entries
-    if (extractedData.length > 50) {
-      extractedData = extractedData.slice(0, 50);
-    }
+  for (const [index, channelKey] of channelKeys.entries()) {
+    await loadChannelHistory(channelKey);
     
-    // Add announcements channel to botChannels if not already there
-    const announcementsExists = botChannels.some(ch => ch.id === announcementsChannelId);
-    if (!announcementsExists) {
-      botChannels.unshift({
-        id: announcementsChannelId,
-        name: 'announcements',
-        is_private: false,
-        num_members: 0,
-        purpose: 'Important announcements and updates',
-        updated: new Date().toISOString()
-      });
-    }
+    // Update progress
+    loadingStatus.completed = index + 1;
     
-  } catch (error) {
-    console.error('❌ Error loading announcements history:', error);
+    // Add delay between channels (except for the last one)
+    if (index < channelKeys.length - 1) {
+      loadingStatus.message = `Waiting before loading next channel... (${index + 1}/${channelKeys.length} completed)`;
+      console.log(`⏳ Waiting ${delayMs/1000}s before loading next channel... (${index + 1}/${channelKeys.length} completed)`);
+      await sleep(delayMs);
+    }
   }
+  
+  // Mark as completed
+  loadingStatus.isLoading = false;
+  loadingStatus.currentChannel = null;
+  loadingStatus.message = 'All channels loaded successfully!';
+  
+  console.log(`✅ All ${channelKeys.length} channels loaded successfully!`);
 }
 
 
@@ -329,20 +246,16 @@ async function startSlackBot() {
       await slackApp.start();
       console.log('Slack bot started in socket mode and ready to receive events');
       
-      // Load only essential channels on startup
+      // Load all channels on startup using batch processing
       setTimeout(async () => {
-        await loadHappeningsHistory();
-        await sleep(15000); // Wait 15 seconds between calls
-        await loadAnnouncementsHistory();
-        // Load other channels only on user demand to reduce startup time
+        console.log('🔄 Initializing channel data...');
+        await loadMultipleChannels(['happenings', 'announcements', 'ship', 'hackathons'], 15000);
+        console.log('🎉 Dashboard is ready!');
       }, 2000); // Wait 2 seconds for bot to fully initialize
       
-      // Refresh only critical channels every 2 hours
+      // Refresh critical channels every 2 hours
       setInterval(async () => {
-        await loadHappeningsHistory();
-        await sleep(30000); // Wait 30 seconds between calls
-        await loadAnnouncementsHistory();
-        // Skip other channels in auto-refresh to reduce API calls
+        await loadMultipleChannels(['happenings', 'announcements', 'ship', 'hackathons'], 30000);
       }, 2 * 60 * 60 * 1000);
       
     } catch (error) {
@@ -353,10 +266,23 @@ async function startSlackBot() {
   }
 }
 
+// Function to load all monitored channels
+async function loadAllChannels() {
+  const channelKeys = Object.keys(MONITORED_CHANNELS);
+  await loadMultipleChannels(channelKeys, 15000);
+}
+
 // Export functions for use in main app
 module.exports = {
   startSlackBot,
   getBotChannels,
   getExtractedData: () => extractedData,
-  isSlackBotInitialized: () => !!slackApp
+  getLoadingStatus: () => loadingStatus,
+  isSlackBotInitialized: () => !!slackApp,
+  loadChannelHistory,
+  loadAllChannels,
+  loadHappeningsHistory,
+  loadHackathonsHistory,
+  loadShipHistory,
+  loadAnnouncementsHistory
 };

@@ -170,6 +170,18 @@ h1 {
     box-shadow: 1px 1px 0px #666;
 }
 
+.refresh-btn.loading {
+    background: #666;
+    cursor: not-allowed;
+    opacity: 0.7;
+    /* Override any flex/padding from .loading class */
+    display: inline-block !important;
+    flex-direction: initial !important;
+    align-items: initial !important;
+    justify-content: initial !important;
+    padding: 8px 12px !important;
+}
+
 .events-source {
     padding: 10px 15px;
     font-size: 0.8rem;
@@ -763,6 +775,36 @@ h1 {
     40% { content: '.'; }
     60% { content: '..'; }
     80%, 100% { content: '...'; }
+}
+
+/* Small loading indicator for incremental loading */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    margin: 10px 0;
+    background: #f9f9f9;
+    border-radius: 4px;
+    border: 1px solid #e0e0e0;
+}
+
+.loading-spinner-small {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #666;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+}
+
+.loading-text-small {
+    font-family: 'Courier New', monospace;
+    font-size: 0.8rem;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 1px;
 }
 
 /* Skeleton Loading */

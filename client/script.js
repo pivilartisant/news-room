@@ -196,30 +196,51 @@ async function loadSlackData() {
     const slackListDiv = document.getElementById('slack-list');
     const refreshBtn = document.querySelector('.slack-container .refresh-btn');
     
-    // Show loading state
-    slackListDiv.innerHTML = `
-        <div class="loading">
-            <div class="loading-spinner"></div>
-            <div class="loading-text loading-dots">Loading Slack messages</div>
-        </div>
-    `;
     refreshBtn.classList.add('loading');
     
     try {
         console.info('🔗 Loading Slack data');
-        const response = await fetch('/api/slack-data');
-        allSlackData = await response.json();
         
-        // Ensure we have channel names, if not load them
+        // Ensure we have channel names first
         if (Object.keys(channelNames).length === 0) {
             await loadChannels();
         }
         
+        // Start polling for data updates as channels load
+        const dataInterval = setInterval(async () => {
+            try {
+                const response = await fetch('/api/slack-data');
+                const newData = await response.json();
+                
+                // Only update if we have new data
+                if (newData.length !== allSlackData.length) {
+                    allSlackData = newData;
+                    displayFilteredMessages();
+                }
+                
+                // Check if loading is complete
+                const statusResponse = await fetch('/api/slack-loading-status');
+                const status = await statusResponse.json();
+                
+                if (!status.isLoading) {
+                    clearInterval(dataInterval);
+                    refreshBtn.classList.remove('loading');
+                }
+            } catch (error) {
+                console.error('Error polling Slack data:', error);
+                clearInterval(dataInterval);
+                refreshBtn.classList.remove('loading');
+            }
+        }, 2000); // Check every 2 seconds
+        
+        // Initial load
+        const response = await fetch('/api/slack-data');
+        allSlackData = await response.json();
         displayFilteredMessages();
+        
     } catch (error) {
         console.error('Error loading Slack data:', error);
         slackListDiv.innerHTML = '<div class="error">❌ Error loading Slack data. Please try again.</div>';
-    } finally {
         refreshBtn.classList.remove('loading');
     }
 }
@@ -235,21 +256,63 @@ function displayFilteredMessages() {
     // Sort messages by timestamp (most recent first)
     filteredData.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
     
-    if (filteredData.length === 0) {
-        slackListDiv.innerHTML = selectedChannel === 'all' ? 
-            '<p>No Slack activity found.</p>' : 
-            '<p>No messages in selected channel.</p>';
-        return;
+    // Build the messages HTML
+    let messagesHTML = '';
+    
+    if (filteredData.length > 0) {
+        messagesHTML = filteredData.map(message => {
+            const channelName = channelNames[message.channel] || message.channel;
+            const displayChannel = channelName.startsWith('#') ? channelName : `#${channelName}`;
+            const messageType = getMessageType(message);
+            const parsedText = parseSlackMessage(message.text);
+            
+            return renderMessage(message, messageType, displayChannel, parsedText);
+        }).join('');
     }
     
-    slackListDiv.innerHTML = filteredData.map(message => {
-        const channelName = channelNames[message.channel] || message.channel;
-        const displayChannel = channelName.startsWith('#') ? channelName : `#${channelName}`;
-        const messageType = getMessageType(message);
-        const parsedText = parseSlackMessage(message.text);
-        
-        return renderMessage(message, messageType, displayChannel, parsedText);
-    }).join('');
+    // Check if we're currently loading to show a subtle loading indicator
+    fetch('/api/slack-loading-status')
+        .then(response => response.json())
+        .then(status => {
+            let loadingIndicator = '';
+            
+            if (status.isLoading) {
+                const progress = status.total > 0 ? `${status.completed}/${status.total}` : '';
+                loadingIndicator = `
+                    <div class="loading-indicator">
+                        <div class="loading-spinner-small"></div>
+                        <span class="loading-text-small">Loading more channels... ${progress}</span>
+                    </div>
+                `;
+            }
+            
+            if (filteredData.length === 0) {
+                if (status.isLoading) {
+                    slackListDiv.innerHTML = `
+                        <div class="loading">
+                            <div class="loading-spinner"></div>
+                            <div class="loading-text loading-dots">Loading Slack messages...</div>
+                        </div>
+                    `;
+                } else {
+                    slackListDiv.innerHTML = selectedChannel === 'all' ? 
+                        '<p>No Slack activity found.</p>' : 
+                        '<p>No messages in selected channel.</p>';
+                }
+            } else {
+                slackListDiv.innerHTML = messagesHTML + loadingIndicator;
+            }
+        })
+        .catch(error => {
+            console.error('Error checking loading status:', error);
+            if (filteredData.length === 0) {
+                slackListDiv.innerHTML = selectedChannel === 'all' ? 
+                    '<p>No Slack activity found.</p>' : 
+                    '<p>No messages in selected channel.</p>';
+            } else {
+                slackListDiv.innerHTML = messagesHTML;
+            }
+        });
 }
 
 // Render message based on type
