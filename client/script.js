@@ -98,8 +98,6 @@ async function loadHackathons() {
 let selectedChannel = 'all';
 let allSlackData = [];
 let channelNames = {};
-let isAdminMode = false;
-let adminToken = null;
 
 // Function to parse Slack-formatted links and convert to HTML
 function parseSlackLinks(text) {
@@ -129,23 +127,7 @@ async function loadSlackData() {
     
     try {
         console.info('🔗 Loading Slack data');
-        let url = '/api/slack-data';
-        let options = {};
-        
-        if (isAdminMode && adminToken) {
-            url = '/api/slack-data-admin';
-            options.headers = { 'Authorization': adminToken };
-        }
-        
-        const response = await fetch(url, options);
-        
-        if (response.status === 401) {
-            alert('Invalid admin credentials. Switching to public mode.');
-            isAdminMode = false;
-            adminToken = null;
-            return loadSlackData(); // Retry with public endpoint
-        }
-        
+        const response = await fetch('/api/slack-data');
         allSlackData = await response.json();
         
         // Ensure we have channel names, if not load them
@@ -250,12 +232,12 @@ async function loadChannels() {
         if (channels.length > 0) {
         buttonsHTML += channels
         .filter(channel => channel.id !== 'C05B6DBN802' && channel.id !== 'C0NP503L7' && channel.id !== 'C0M8PUPU6' && channel.id !== 'C0266FRGT') // Don't duplicate hardcoded channels
-        .filter(channel => isAdminMode || !channel.is_private) // Hide private channels in public mode
+        .filter(channel => !channel.is_private) // Only show public channels
         .map(channel => `
         <button class="channel-filter-btn ${selectedChannel === channel.id ? 'active' : ''}" 
         onclick="filterByChannel('${channel.id}')"
             title="${channel.purpose || 'No description'}">
-            #${channel.name} ${channel.is_private ? '🔒' : ''}
+            #${channel.name}
             </button>
                 `).join('');
                 }
@@ -299,30 +281,7 @@ function filterByChannel(channelId) {
     displayFilteredMessages();
 }
 
-function toggleAdminMode() {
-    if (isAdminMode) {
-        // Switch to public mode
-        isAdminMode = false;
-        adminToken = null;
-        selectedChannel = 'all'; // Reset to show all available data
-        document.getElementById('admin-toggle').textContent = 'Admin Mode';
-        document.getElementById('admin-toggle').style.background = '#1a1a1a';
-        loadSlackData(); // Reload with public data
-        loadChannels(); // Reload channel filters
-    } else {
-        // Prompt for admin token
-        const token = prompt('Enter admin password:');
-        if (token) {
-            adminToken = token;
-            isAdminMode = true;
-            selectedChannel = 'all'; // Reset to show all available data
-            document.getElementById('admin-toggle').textContent = 'Public Mode';
-            document.getElementById('admin-toggle').style.background = '#dc2626';
-            loadSlackData(); // Reload with admin data
-            loadChannels(); // Reload channel filters
-        }
-    }
-}
+
 
 // Show initial skeleton loading
 function showSkeletonLoading() {

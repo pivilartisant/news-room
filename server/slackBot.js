@@ -1,8 +1,12 @@
 const { App } = require('@slack/bolt');
 
+// Helper function to add delays between API calls
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
 // In-memory storage for extracted data
 let extractedData = [];
-let privateChannelData = [];
 let botChannels = [];
 
 // Slack bot setup (only if environment variables are provided)
@@ -45,8 +49,8 @@ if (slackApp) {
   });
 }
 
-// Function to get chat history from a channel
-async function getChannelHistory(channelId, limit = 3) {
+// Function to get chat history from a channel with rate limit handling
+async function getChannelHistory(channelId, limit = 3, retries = 3) {
   if (!slackApp) return [];
   
   try {
@@ -57,7 +61,15 @@ async function getChannelHistory(channelId, limit = 3) {
     
     return result.messages;
   } catch (error) {
-    console.error('Error fetching channel history:', error);
+    // Handle rate limiting
+    if (error.code === 'rate_limited' && retries > 0) {
+      const retryAfter = error.retryAfter || 60; // Default to 60 seconds
+      console.log(`Rate limited, waiting ${retryAfter} seconds before retry...`);
+      await sleep(retryAfter * 1000);
+      return getChannelHistory(channelId, limit, retries - 1);
+    }
+    
+    console.error(`Error fetching channel history for ${channelId}:`, error.message);
     return [];
   }
 }
@@ -67,9 +79,9 @@ async function getBotChannels() {
   if (!slackApp) return [];
   
   try {
-    // Get list of conversations (channels) the bot is a member of
+    // Get list of public channels the bot is a member of
     const result = await slackApp.client.conversations.list({
-      types: 'private_channel',
+      types: 'public_channel',
       exclude_archived: true
     });
     
@@ -77,7 +89,7 @@ async function getBotChannels() {
     botChannels = channels.map(channel => ({
       id: channel.id,
       name: channel.name,
-      is_private: channel.is_private,
+      is_private: false,
       num_members: channel.num_members || 0,
       purpose: channel.purpose?.value || '',
       updated: new Date().toISOString()
@@ -97,8 +109,8 @@ async function loadHappeningsHistory() {
     
     const happeningsChannelId = 'C05B6DBN802'; // Hardcoded #happenings channel ID
     
-    const messages = await getChannelHistory(happeningsChannelId, 3); // Get more messages
-    
+    const messages = await getChannelHistory(happeningsChannelId, 1); // Only 1 message
+
 
     if (messages.length === 0) {
       console.log('📭 No messages found in #happenings');
@@ -152,7 +164,7 @@ async function loadHackathonsHistory() {
     
     const hackathonsChannelId = 'C0NP503L7'; // Hardcoded #hackathons channel ID
     
-    const messages = await getChannelHistory(hackathonsChannelId, 3); // Get only last 2 messages
+    const messages = await getChannelHistory(hackathonsChannelId, 2); // Get only last 2 messages
     
     if (messages.length === 0) {
       console.log('📭 No messages found in #hackathons');
@@ -206,7 +218,7 @@ async function loadShipHistory() {
     
     const shipChannelId = 'C0M8PUPU6'; // Hardcoded #ship channel ID
     
-    const messages = await getChannelHistory(shipChannelId, 3); // Get only last 1 message
+    const messages = await getChannelHistory(shipChannelId, 1); // Get only last 1 message
     
     if (messages.length === 0) {
       console.log('📭 No messages found in #ship');
@@ -261,7 +273,7 @@ async function loadAnnouncementsHistory() {
     
     const announcementsChannelId = 'C0266FRGT'; // Hardcoded #announcements channel ID
     
-    const messages = await getChannelHistory(announcementsChannelId, 3); // Get last 3 messages
+    const messages = await getChannelHistory(announcementsChannelId, 1); // Get last 2 messages
     
     if (messages.length === 0) {
       console.log('📭 No messages found in #announcements');
@@ -308,65 +320,7 @@ async function loadAnnouncementsHistory() {
   }
 }
 
-// Function to load history from all private channels
-async function loadPrivateChannelsHistory() {
-  try {
-    console.log('🔍 Loading private channels history...');
-    
-    // Get all channels the bot is in
-    const allChannels = await getBotChannels();
-    const privateChannels = allChannels.filter(channel => channel.is_private);
-    
-    if (privateChannels.length === 0) {
-      console.log('📭 No private channels found');
-      return;
-    }
-    
-    console.log(`📋 Found ${privateChannels.length} private channels:`, privateChannels.map(ch => ch.name));
-    
-    // Load 2 messages from each private channel
-    for (const channel of privateChannels) {
-      try {
-        const messages = await getChannelHistory(channel.id, 2);
-        
-        if (messages.length === 0) {
-          console.log(`📭 No messages found in #${channel.name}`);
-          continue;
-        }
-        
-        console.log(`📋 Loaded ${messages.length} messages from private #${channel.name}`);
-        
-        // Convert messages to same format as real-time messages
-        const privateMessages = messages.map(message => ({
-          id: `private-${channel.name}-${message.ts}`,
-          timestamp: new Date(message.ts * 1000).toISOString(),
-          user: message.user,
-          channel: channel.id,
-          text: message.text
-        }));
-        
-        // Remove old messages from this private channel
-        privateChannelData = privateChannelData.filter(msg => !msg.id.startsWith(`private-${channel.name}-`));
-        
-        // Add new messages to the beginning
-        privateChannelData = [...privateMessages.reverse(), ...privateChannelData];
-        
-      } catch (error) {
-        console.error(`❌ Error loading history from private #${channel.name}:`, error);
-      }
-    }
-    
-    // Keep only last 50 entries for private channels
-    if (privateChannelData.length > 50) {
-      privateChannelData = privateChannelData.slice(0, 50);
-    }
-    
-    console.log(`✅ Private channel messages: ${privateChannelData.length}`);
-    
-  } catch (error) {
-    console.error('❌ Error loading private channels history:', error);
-  }
-}
+
 
 // Function to start the Slack bot
 async function startSlackBot() {
@@ -375,23 +329,21 @@ async function startSlackBot() {
       await slackApp.start();
       console.log('Slack bot started in socket mode and ready to receive events');
       
-      // Load channel histories after bot starts
+      // Load only essential channels on startup
       setTimeout(async () => {
         await loadHappeningsHistory();
-        await loadHackathonsHistory();
-        await loadShipHistory();
+        await sleep(15000); // Wait 15 seconds between calls
         await loadAnnouncementsHistory();
-        await loadPrivateChannelsHistory();
+        // Load other channels only on user demand to reduce startup time
       }, 2000); // Wait 2 seconds for bot to fully initialize
       
-      // Refresh channel data every 10 minutes
+      // Refresh only critical channels every 2 hours
       setInterval(async () => {
         await loadHappeningsHistory();
-        await loadHackathonsHistory();
-        await loadShipHistory();
+        await sleep(30000); // Wait 30 seconds between calls
         await loadAnnouncementsHistory();
-        await loadPrivateChannelsHistory();
-      }, 10 * 60 * 1000);
+        // Skip other channels in auto-refresh to reduce API calls
+      }, 2 * 60 * 60 * 1000);
       
     } catch (error) {
       console.error('Error starting Slack bot:', error);
@@ -406,7 +358,5 @@ module.exports = {
   startSlackBot,
   getBotChannels,
   getExtractedData: () => extractedData,
-  getPrivateChannelData: () => privateChannelData,
-  getAllData: () => [...extractedData, ...privateChannelData],
   isSlackBotInitialized: () => !!slackApp
 };

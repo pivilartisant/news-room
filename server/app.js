@@ -64,21 +64,7 @@ app.get('/api/slack-data', (req, res) => {
   res.json(extractedData);
 });
 
-// API endpoint to get ALL Slack data (admin only)
-app.get('/api/slack-data-admin', (req, res) => {
-  const adminToken = req.headers.authorization || req.query.admin_token;
-  
-  if (!process.env.ADMIN_TOKEN) {
-    return res.status(503).json({ error: 'Admin functionality not configured' });
-  }
-  
-  if (adminToken !== process.env.ADMIN_TOKEN) {
-    return res.status(401).json({ error: 'Invalid admin credentials' });
-  }
-  
-  const allData = slackBot.getAllData();
-  res.json(allData);
-});
+
 
 // API endpoint to get bot channels
 app.get('/api/slack-channels', async (req, res) => {
