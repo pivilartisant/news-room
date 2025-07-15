@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Channel Link Parsing</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .test-case { margin: 20px 0; padding: 15px; border: 1px solid #ccc; }
+        .original { background: #f5f5f5; padding: 10px; margin: 10px 0; }
+        .parsed { background: #e8f5e8; padding: 10px; margin: 10px 0; }
+        .channel-mention { background: #e3f2fd; color: #1976d2; padding: 2px 6px; border-radius: 3px; font-weight: bold; text-decoration: none; }
+    </style>
+</head>
+<body>
+    <h1>Channel Link Parsing Test</h1>
+    
+    <div class="test-case">
+        <h3>Test 1: Channel with display name</h3>
+        <div class="original">Original: &lt;#C08SPN75J4E|showcase&gt;</div>
+        <div class="parsed" id="test1"></div>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test 2: Channel without display name</h3>
+        <div class="original">Original: &lt;#C08SPN75J4E&gt;</div>
+        <div class="parsed" id="test2"></div>
+    </div>
+    
+    <div class="test-case">
+        <h3>Test 3: Multiple channels</h3>
+        <div class="original">Original: Meet people in &lt;#C08SPN75J4E|&gt;, &lt;#C07G7LVA9PY|&gt;, &lt;#C087B5QM9BP|&gt; and &lt;#C07MYBDLBGU|&gt;</div>
+        <div class="parsed" id="test3"></div>
+    </div>
+
+    <script>
+        // Replicate the parsing function
+        function parseSlackMessage(text) {
+            if (!text) return text;
+            
+            // Get channel display name for channel ID
+            function getChannelDisplayName(channelId) {
+                const knownChannels = {
+                    'C05B6DBN802': 'happenings',
+                    'C0NP503L7': 'hackathons',
+                    'C0M8PUPU6': 'ship',
+                    'C0266FRGT': 'announcements',
+                    'C08SPN75J4E': 'showcase',
+                    'C07G7LVA9PY': 'personal-blog',
+                    'C087B5QM9BP': 'personal-space',
+                    'C07MYBDLBGU': 'personal-updates'
+                };
+                return knownChannels[channelId] || channelId;
+            }
+            
+            return text
+                // Handle channel mentions with clickable links
+                .replace(/<#([^|>]+)\|([^>]+)>/g, '<a href="https://app.slack.com/client/T0266FRGM/$1?cdn_fallback=2" target="_blank" class="channel-mention">#$2</a>')
+                // Handle channel mentions without display name
+                .replace(/<#([^|>]+)>/g, (match, channelId) => {
+                    const displayName = getChannelDisplayName(channelId);
+                    return `<a href="https://app.slack.com/client/T0266FRGM/${channelId}?cdn_fallback=2" target="_blank" class="channel-mention">#${displayName}</a>`;
+                });
+        }
+        
+        // Test cases
+        document.getElementById('test1').innerHTML = parseSlackMessage('<#C08SPN75J4E|showcase>');
+        document.getElementById('test2').innerHTML = parseSlackMessage('<#C08SPN75J4E>');
+        document.getElementById('test3').innerHTML = parseSlackMessage('Meet people in <#C08SPN75J4E|>, <#C07G7LVA9PY|>, <#C087B5QM9BP|> and <#C07MYBDLBGU|>');
+    </script>
+</body>
+</html>
